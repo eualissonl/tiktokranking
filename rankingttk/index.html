@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Classificação Geral - GP F1 Seguidores</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #0d0f12;
+      color: #ffffff;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    header {
+      text-align: center;
+      padding: 16px 12px;
+      background: #14171d;
+      border-radius: 16px;
+      border: 1px solid #222834;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+    }
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      color: #ffd700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    header p {
+      font-size: 13px;
+      color: #8fa0b5;
+      margin-top: 4px;
+    }
+
+    .top-three {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      align-items: flex-end;
+      margin-top: 10px;
+    }
+
+    .top-card {
+      background: #181d26;
+      border-radius: 14px;
+      padding: 14px 8px;
+      text-align: center;
+      border: 1px solid #252e3d;
+      position: relative;
+    }
+
+    .top-card.first {
+      background: linear-gradient(180deg, rgba(255, 215, 0, 0.15) 0%, #181d26 100%);
+      border-color: #ffd700;
+      transform: translateY(-8px);
+    }
+
+    .top-card.second {
+      border-color: #c0c0c0;
+    }
+
+    .top-card.third {
+      border-color: #cd7f32;
+    }
+
+    .avatar-wrapper {
+      position: relative;
+      width: 56px;
+      height: 56px;
+      margin: 0 auto 8px auto;
+    }
+
+    .avatar-wrapper img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #333d4e;
+    }
+
+    .top-card.first .avatar-wrapper img {
+      border-color: #ffd700;
+      box-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+    }
+
+    .crown-icon {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 18px;
+    }
+
+    .top-card .name {
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+    }
+
+    .top-card .points {
+      font-size: 14px;
+      font-weight: 900;
+      color: #00e5ff;
+      margin-top: 4px;
+    }
+
+    .top-card .wins {
+      font-size: 10px;
+      color: #8fa0b5;
+    }
+
+    .leaderboard-list {
+      background: #14171d;
+      border-radius: 16px;
+      border: 1px solid #222834;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .row-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: #191e28;
+      border-radius: 10px;
+      transition: background 0.15s ease;
+    }
+
+    .row-item:hover {
+      background: #202735;
+    }
+
+    .row-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      overflow: hidden;
+    }
+
+    .row-rank {
+      font-size: 14px;
+      font-weight: 800;
+      color: #8fa0b5;
+      width: 24px;
+      text-align: center;
+    }
+
+    .row-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #0f1217;
+      border: 1px solid #2e3848;
+      flex-shrink: 0;
+    }
+
+    .row-name {
+      font-size: 13px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .row-right {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .row-points {
+      font-size: 14px;
+      font-weight: 900;
+      color: #00e5ff;
+    }
+
+    .row-wins {
+      font-size: 10px;
+      color: #728296;
+    }
+
+    .loading, .error-msg {
+      text-align: center;
+      padding: 30px;
+      font-size: 14px;
+      color: #8fa0b5;
+    }
+
+    .btn-refresh {
+      background: #202735;
+      color: #00e5ff;
+      border: 1px solid #00e5ff;
+      border-radius: 10px;
+      padding: 12px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-refresh:hover {
+      background: rgba(0, 229, 255, 0.1);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>🏆 MUNDIAL DE PILOTOS F1</h1>
+    <p>Campeonato Oficial de Seguidores</p>
+  </header>
+
+  <div id="podium-section" class="top-three" style="display: none;"></div>
+
+  <div class="leaderboard-list">
+    <div id="loading" class="loading">Carregando classificação do Supabase...</div>
+    <div id="ranking-rows"></div>
+  </div>
+
+  <button class="btn-refresh" onclick="fetchLeaderboard()">🔄 Atualizar Classificação</button>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://pdrkrltchoglgtnjprio.supabase.co";
+  const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBkcmtybHRjaG9nbGd0bmpwcmlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAwMjQ2NzcsImV4cCI6MjEwNTYwMDY3N30.XTm5WAFVXhUdMDevKGI8yYtQGH4zuNRw90cTbpecEDc";
+
+  async function fetchLeaderboard() {
+    const loading = document.getElementById('loading');
+    const rankingRows = document.getElementById('ranking-rows');
+    const podiumSection = document.getElementById('podium-section');
+
+    if (loading) loading.style.display = 'block';
+    if (rankingRows) rankingRows.innerHTML = '';
+    if (podiumSection) {
+      podiumSection.style.display = 'none';
+      podiumSection.innerHTML = '';
+    }
+
+    try {
+      const url = `${SUPABASE_URL}/rest/v1/leaderboard?select=*&order=points.desc,wins.desc&limit=100`;
+      
+      const res = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'apikey': SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`HTTP ${res.status}: ${errText}`);
+      }
+
+      const data = await res.json();
+      if (loading) loading.style.display = 'none';
+
+      if (!data || data.length === 0) {
+        if (rankingRows) {
+          rankingRows.innerHTML = '<div class="loading">Nenhuma corrida registrada ainda. Faça a primeira prova no simulador!</div>';
+        }
+        return;
+      }
+
+      if (data.length >= 3 && podiumSection) {
+        podiumSection.style.display = 'grid';
+        const p1 = data[0];
+        const p2 = data[1];
+        const p3 = data[2];
+
+        podiumSection.innerHTML = `
+          <div class="top-card second">
+            <div class="avatar-wrapper">
+              <img src="${p2.avatar_url || 'https://via.placeholder.com/150'}" alt="${p2.username}" />
+            </div>
+            <div class="name">@${p2.username}</div>
+            <div class="points">${p2.points} pts</div>
+            <div class="wins">🏁 ${p2.wins || 0} vitórias</div>
+          </div>
+
+          <div class="top-card first">
+            <div class="avatar-wrapper">
+              <span class="crown-icon">👑</span>
+              <img src="${p1.avatar_url || 'https://via.placeholder.com/150'}" alt="${p1.username}" />
+            </div>
+            <div class="name">@${p1.username}</div>
+            <div class="points">${p1.points} pts</div>
+            <div class="wins">🏁 ${p1.wins || 0} vitórias</div>
+          </div>
+
+          <div class="top-card third">
+            <div class="avatar-wrapper">
+              <img src="${p3.avatar_url || 'https://via.placeholder.com/150'}" alt="${p3.username}" />
+            </div>
+            <div class="name">@${p3.username}</div>
+            <div class="points">${p3.points} pts</div>
+            <div class="wins">🏁 ${p3.wins || 0} vitórias</div>
+          </div>
+        `;
+      }
+
+      if (rankingRows) {
+        data.forEach((pilot, index) => {
+          const row = document.createElement('div');
+          row.className = 'row-item';
+          row.innerHTML = `
+            <div class="row-left">
+              <span class="row-rank">${index + 1}º</span>
+              <img class="row-avatar" src="${pilot.avatar_url || 'https://via.placeholder.com/150'}" alt="${pilot.username}" />
+              <span class="row-name">@${pilot.username}</span>
+            </div>
+            <div class="row-right">
+              <div class="row-points">${pilot.points} pts</div>
+              <div class="row-wins">${pilot.wins || 0} vitórias</div>
+            </div>
+          `;
+          rankingRows.appendChild(row);
+        });
+      }
+
+    } catch (err) {
+      console.error(err);
+      if (loading) loading.style.display = 'none';
+      if (rankingRows) {
+        rankingRows.innerHTML = `<div class="error-msg">Erro: ${err.message}</div>`;
+      }
+    }
+  }
+
+  fetchLeaderboard();
+</script>
+
+</body>
+</html>
