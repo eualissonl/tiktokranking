@@ -12,18 +12,19 @@ body{background:#0b0d10;color:#fff;font-family:Arial,Helvetica,sans-serif;min-he
 .header h1{font-size:23px;color:#ffd900;font-weight:900}
 .header p{margin-top:7px;font-size:13px;color:#aab4c5}
 #status{text-align:center;font-size:12px;color:#7e8a9d;margin-bottom:12px;min-height:16px}
+#status:empty{display:none}
 .podium{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:end;margin-bottom:20px}
-.podium-card{background:#171b23;border:1px solid #343b47;border-radius:15px;min-height:180px;padding:14px 6px 10px;text-align:center;display:flex;flex-direction:column;justify-content:center;position:relative}
-.podium-card.first{border-color:#ffe000;background:linear-gradient(180deg,rgba(255,216,0,.13),#171b23 65%);min-height:195px}
+.podium-card{background:#171b23;border:1px solid #343b47;border-radius:15px;min-height:220px;padding:16px 7px 12px;text-align:center;display:flex;flex-direction:column;justify-content:center;position:relative}
+.podium-card.first{border-color:#ffe000;background:linear-gradient(180deg,rgba(255,216,0,.13),#171b23 65%);min-height:245px}
 .podium-card.second{border-color:#bfc5cc}.podium-card.third{border-color:#e48a22}
-.crown{position:absolute;top:-17px;left:50%;transform:translateX(-50%);font-size:25px}
-.avatar{width:55px;height:55px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 9px;border:2px solid #414956;background:#292e38}
+.crown{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:30px}
+.avatar{width:70px;height:70px;border-radius:50%;object-fit:cover;display:block;margin:0 auto 10px;border:2px solid #414956;background:#292e38}
 .first .avatar{border-color:#ffe000;box-shadow:0 0 10px rgba(255,224,0,.35)}
 .second .avatar{border-color:#9ca4af}.third .avatar{border-color:#d47b1d}
-.podium-position{font-size:11px;color:#aab2c0;margin-bottom:5px}
-.podium-name{font-size:12px;font-weight:800;color:#fff;word-break:break-word;min-height:29px;display:flex;align-items:center;justify-content:center}
-.podium-points{margin-top:6px;font-size:16px;font-weight:900;color:#00eaff}
-.podium-wins{font-size:10px;color:#9ba5b6;margin-top:4px}
+.podium-position{font-size:12px;color:#aab2c0;margin-bottom:6px}
+.podium-name{font-size:14px;font-weight:800;color:#fff;word-break:break-word;min-height:34px;display:flex;align-items:center;justify-content:center}
+.podium-points{margin-top:7px;font-size:18px;font-weight:900;color:#00eaff}
+.podium-wins{font-size:11px;color:#9ba5b6;margin-top:5px}
 .ranking-box{background:#11151b;border:1px solid #292f39;border-radius:16px;padding:10px}
 .ranking-title{text-align:center;color:#fff;font-size:15px;font-weight:900;padding:8px 0 12px}
 .ranking-list{display:flex;flex-direction:column;gap:2px}
@@ -39,7 +40,7 @@ body{background:#0b0d10;color:#fff;font-family:Arial,Helvetica,sans-serif;min-he
 .refresh-area{text-align:center;margin-top:15px}
 #refreshBtn{background:#171b22;border:1px solid #343b47;color:#cbd3df;border-radius:9px;padding:9px 18px;cursor:pointer;font-size:12px;font-weight:700}
 #refreshBtn:disabled{opacity:.5;cursor:default}
-@media(max-width:380px){.header h1{font-size:20px}.podium{gap:6px}.podium-card{padding-left:3px;padding-right:3px}.podium-name{font-size:10px}.podium-points{font-size:14px}}
+@media(max-width:380px){.header h1{font-size:20px}.podium{gap:6px}.podium-card{padding-left:3px;padding-right:3px}.avatar{width:62px;height:62px}.podium-name{font-size:11px}.podium-points{font-size:16px}}
 </style>
 </head>
 <body>
@@ -136,7 +137,7 @@ async function loadRanking(){
     renderPodium(players);
     renderRanking(players);
 
-    statusEl.textContent=`🏁 ${players.length} piloto${players.length===1?"":"s"} no campeonato`;
+    statusEl.textContent="";
   }catch(error){
     console.error("Erro ao carregar ranking:",error);
     statusEl.textContent="❌ Erro ao carregar ranking.";
