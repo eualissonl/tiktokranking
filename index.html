@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <title>Corrida de Seguidores - GP F1 Supabase</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Mundial de Pilotos F1</title>
 
   <style>
     * {
@@ -13,1150 +14,881 @@
     }
 
     body {
-      background: #111;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      font-family: 'Segoe UI', Arial, sans-serif;
-      overflow: hidden;
-    }
-
-    #game-container {
-      position: relative;
-      width: 450px;
-      height: 800px;
-      background: #1e311b;
-      box-shadow: 0 0 30px rgba(0,0,0,0.8);
-      overflow: hidden;
-      border-radius: 12px;
-    }
-
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-    }
-
-    #ui-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-    }
-
-    #dropzone {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.92);
-      border: 3px dashed #00e5ff;
-      border-radius: 16px;
-      padding: 24px 20px;
-      text-align: center;
-      color: #fff;
-      pointer-events: auto;
-      cursor: pointer;
-      width: 88%;
-      z-index: 30;
-    }
-
-    #dropzone input[type="file"] {
-      display: none;
-    }
-
-    .config-box {
-      margin-bottom: 12px;
-      background: #1a1a1a;
-      padding: 10px;
-      border-radius: 8px;
-      border: 1px solid #333;
-    }
-
-    .config-box label {
-      display: block;
-      font-size: 13px;
-      color: #aaa;
-      margin-bottom: 5px;
-    }
-
-    .config-box input[type="number"] {
-      width: 120px;
-      padding: 6px;
-      border-radius: 6px;
-      border: 1px solid #00e5ff;
-      background: #000;
-      color: #fff;
-      font-size: 15px;
-      text-align: center;
-      font-weight: bold;
-    }
-
-    .btn-action {
-      display: block;
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      background: #222;
-      color: #00e5ff;
-      border: 2px solid #00e5ff;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 800;
-      cursor: pointer;
-      transition: background 0.2s, transform 0.1s;
-    }
-
-    .btn-action:hover {
-      background: rgba(0, 229, 255, 0.15);
-      transform: scale(1.02);
-    }
-
-    #btn-start-race {
-      display: none;
-      width: 100%;
-      padding: 14px;
-      margin-top: 15px;
-      background: #00ff66;
-      color: #000;
-      border: none;
-      border-radius: 10px;
-      font-size: 16px;
-      font-weight: 900;
-      letter-spacing: 1px;
-      cursor: pointer;
-      box-shadow: 0 0 15px rgba(0, 255, 102, 0.5);
-      transition: transform 0.1s, background 0.2s;
-    }
-
-    #btn-start-race:hover {
-      background: #33ff88;
-      transform: scale(1.02);
-    }
-
-    #countdown-overlay {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 75px;
-      font-weight: 900;
-      color: #ff3333;
-      text-shadow:
-        0 0 25px rgba(255, 50, 50, 0.8),
-        0 4px 10px rgba(0,0,0,0.9);
-      display: none;
-      z-index: 25;
-      text-align: center;
-      letter-spacing: 2px;
-    }
-
-    #leader-badge {
-      position: absolute;
-      top: 15px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.85);
-      border: 2px solid #ffd700;
-      color: #ffd700;
-      padding: 6px 16px;
-      border-radius: 30px;
-      font-size: 14px;
-      font-weight: bold;
-      display: none;
-      z-index: 10;
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
-      white-space: nowrap;
-    }
-
-    #finish-text-badge {
-      position: absolute;
-      top: 60px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0,0,0,0.85);
-      border: 2px solid #ffd700;
-      color: #ffd700;
-      padding: 5px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-weight: bold;
-      display: none;
-      z-index: 10;
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
-      white-space: nowrap;
-    }
-
-    #counter-badge {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(0, 0, 0, 0.9);
-      border: 2px solid #ffd700;
-      color: #ffd700;
-      padding: 8px 18px;
-      border-radius: 20px;
-      font-size: 14px;
-      font-weight: 900;
-      display: block;
-      z-index: 10;
-      box-shadow: 0 4px 15px rgba(255, 215, 0, 0.3);
-      text-align: center;
-      line-height: 1.3;
-      white-space: nowrap;
-    }
-
-    #counter-badge .sub-count {
-      display: block;
-      font-size: 11px;
-      color: #fff;
-      font-weight: normal;
-    }
-
-    #podium-backdrop {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.75);
-      backdrop-filter: blur(8px);
-      display: none;
-      z-index: 20;
-    }
-
-    #podium {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: #111418;
-      border: 2px solid #ffd700;
-      border-radius: 16px;
-      padding: 20px;
+      background: #0b0d10;
       color: white;
-      width: 88%;
-      max-height: 85%;
-      overflow-y: auto;
-      display: none;
-      pointer-events: auto;
+      font-family: Arial, Helvetica, sans-serif;
+      min-height: 100vh;
+      padding: 22px 10px 40px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      margin: auto;
+    }
+
+    /* =========================
+       CABEÇALHO
+    ========================= */
+
+    .header {
+      background: #14171d;
+      border: 1px solid #292f39;
+      border-radius: 16px;
+      padding: 17px 10px;
       text-align: center;
-      z-index: 25;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+      margin-bottom: 20px;
+      box-shadow: 0 5px 20px rgba(0,0,0,.25);
     }
 
-    #podium h2 {
-      color: #ffd700;
-      margin-bottom: 12px;
-      font-size: 20px;
+    .header h1 {
+      font-size: 23px;
+      color: #ffd900;
+      font-weight: 900;
+      letter-spacing: .3px;
     }
 
-    .podium-item {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 6px 10px;
-      margin-bottom: 5px;
-      background: #1e2229;
-      border-radius: 8px;
+    .header p {
+      margin-top: 7px;
       font-size: 13px;
+      color: #aab4c5;
     }
 
-    .podium-item.last-place {
-      background: #2a1818;
-      border: 1px dashed #ff4444;
+    /* =========================
+       STATUS
+    ========================= */
+
+    #status {
+      text-align: center;
+      font-size: 12px;
+      color: #7e8a9d;
+      margin-bottom: 12px;
+      min-height: 16px;
     }
 
-    .podium-item img {
-      width: 28px;
-      height: 28px;
+    /* =========================
+       PÓDIO
+    ========================= */
+
+    .podium {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+      align-items: end;
+      margin-bottom: 20px;
+    }
+
+    .podium-card {
+      background: #171b23;
+      border: 1px solid #343b47;
+      border-radius: 15px;
+      min-height: 180px;
+      padding: 14px 6px 10px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+    }
+
+    .podium-card.first {
+      border-color: #ffe000;
+      background: linear-gradient(
+        180deg,
+        rgba(255,216,0,.13),
+        #171b23 65%
+      );
+      min-height: 195px;
+    }
+
+    .podium-card.second {
+      border-color: #bfc5cc;
+    }
+
+    .podium-card.third {
+      border-color: #e48a22;
+    }
+
+    .crown {
+      position: absolute;
+      top: -17px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 25px;
+    }
+
+    .avatar {
+      width: 55px;
+      height: 55px;
       border-radius: 50%;
       object-fit: cover;
-      margin-right: 8px;
+      display: block;
+      margin: 0 auto 9px;
+      border: 2px solid #414956;
+      background: #292e38;
     }
 
-    .ellipsis-row {
-      color: #888;
-      font-weight: bold;
+    .first .avatar {
+      border-color: #ffe000;
+      box-shadow: 0 0 10px rgba(255,224,0,.35);
+    }
+
+    .second .avatar {
+      border-color: #9ca4af;
+    }
+
+    .third .avatar {
+      border-color: #d47b1d;
+    }
+
+    .podium-position {
+      font-size: 11px;
+      color: #aab2c0;
+      margin-bottom: 5px;
+    }
+
+    .podium-name {
+      font-size: 12px;
+      font-weight: 800;
+      color: white;
+      word-break: break-word;
+      min-height: 29px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .podium-points {
+      margin-top: 6px;
       font-size: 16px;
-      padding: 4px 0;
-      letter-spacing: 4px;
+      font-weight: 900;
+      color: #00eaff;
+    }
+
+    .podium-wins {
+      font-size: 10px;
+      color: #9ba5b6;
+      margin-top: 4px;
+    }
+
+    /* =========================
+       RANKING
+    ========================= */
+
+    .ranking-box {
+      background: #11151b;
+      border: 1px solid #292f39;
+      border-radius: 16px;
+      padding: 10px;
+      box-shadow: 0 5px 20px rgba(0,0,0,.2);
+    }
+
+    .ranking-title {
       text-align: center;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 900;
+      padding: 8px 0 12px;
     }
 
-    .pts-badge {
-      color: #00e5ff;
-      font-weight: bold;
-      font-size: 11px;
+    .ranking-list {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
     }
 
-    #sync-status {
-      font-size: 11px;
-      color: #88ff88;
-      margin-top: 8px;
+    .ranking-row {
+      min-height: 74px;
+      background: #191e26;
+      border-radius: 11px;
+      display: flex;
+      align-items: center;
+      padding: 9px 10px;
+      gap: 9px;
+    }
+
+    .ranking-row:hover {
+      background: #202630;
+    }
+
+    .position {
+      width: 30px;
+      text-align: center;
+      color: #9ba7b9;
+      font-size: 14px;
+      font-weight: 900;
+      flex-shrink: 0;
+    }
+
+    .position.top1 {
+      color: #ffd900;
+    }
+
+    .position.top2 {
+      color: #c8cdd3;
+    }
+
+    .position.top3 {
+      color: #e08b30;
+    }
+
+    .ranking-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      object-fit: cover;
+      background: #303641;
+      border: 1px solid #454d5a;
+      flex-shrink: 0;
+    }
+
+    .player-info {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .player-name {
+      color: white;
+      font-size: 13px;
+      font-weight: 800;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .player-wins {
+      color: #7f8a9c;
+      font-size: 10px;
+      margin-top: 4px;
+    }
+
+    .player-points {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .points {
+      color: #00eaff;
+      font-size: 15px;
+      font-weight: 900;
+    }
+
+    .points-label {
+      color: #728095;
+      font-size: 9px;
+      margin-top: 3px;
+    }
+
+    /* =========================
+       VAZIO / ERRO
+    ========================= */
+
+    .message {
+      text-align: center;
+      padding: 35px 15px;
+      color: #8792a4;
+      font-size: 13px;
+    }
+
+    .error {
+      color: #ff6b6b;
+    }
+
+    /* =========================
+       BOTÃO ATUALIZAR
+    ========================= */
+
+    .refresh-area {
+      text-align: center;
+      margin-top: 15px;
+    }
+
+    #refreshBtn {
+      background: #171b22;
+      border: 1px solid #343b47;
+      color: #cbd3df;
+      border-radius: 9px;
+      padding: 9px 18px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    #refreshBtn:hover {
+      background: #222832;
+    }
+
+    #refreshBtn:disabled {
+      opacity: .5;
+      cursor: default;
+    }
+
+    /* =========================
+       MOBILE
+    ========================= */
+
+    @media (max-width: 380px) {
+      .header h1 {
+        font-size: 20px;
+      }
+
+      .podium {
+        gap: 6px;
+      }
+
+      .podium-card {
+        padding-left: 3px;
+        padding-right: 3px;
+      }
+
+      .podium-name {
+        font-size: 10px;
+      }
+
+      .podium-points {
+        font-size: 14px;
+      }
+
+      .ranking-row {
+        padding-left: 6px;
+        padding-right: 6px;
+      }
     }
   </style>
 </head>
 
 <body>
 
-<div id="game-container">
+<div class="container">
 
-  <canvas id="raceCanvas"></canvas>
+  <!-- CABEÇALHO -->
+  <div class="header">
+    <h1>🏆 MUNDIAL DE PILOTOS F1</h1>
+    <p>Campeonato Oficial de Seguidores</p>
+  </div>
 
-  <div id="ui-overlay">
+  <div id="status">Carregando ranking...</div>
 
-    <div id="leader-badge">
-      <span id="leader-pos">1º 👑</span>
-      <span id="leader-name">...</span>
+  <!-- PÓDIO -->
+  <div id="podium" class="podium"></div>
+
+  <!-- RANKING -->
+  <div class="ranking-box">
+
+    <div class="ranking-title">
+      🏁 RANKING GERAL
     </div>
 
-    <div id="finish-text-badge">🏁 CHEGADA 🏁</div>
-
-    <div id="counter-badge">
-      🏁 GP F1 SEGUIDORES DIA 1
-      <span class="sub-count">
-        👥 <span id="racer-count">0</span> Seguidores Disputando
-      </span>
-    </div>
-
-    <div id="countdown-overlay">5</div>
-
-    <div id="dropzone">
-
-      <div class="config-box" onclick="event.stopPropagation()">
-        <label for="custom-count">
-          Nº de seguidores no vídeo:
-        </label>
-        <input
-          type="number"
-          id="custom-count"
-          value="500"
-          min="1"
-          oninput="document.getElementById('racer-count').innerText = this.value"
-        />
+    <div id="rankingList" class="ranking-list">
+      <div class="message">
+        Carregando pilotos...
       </div>
-
-      <div
-        id="upload-prompt"
-        onclick="document.getElementById('file-input').click()"
-      >
-        <p style="font-size:15px;font-weight:bold;margin-bottom:4px;">
-          Carregar Ficheiro .JSON
-        </p>
-        <p style="font-size:11px;color:#aaa;">
-          Clique para selecionar ou arraste o ficheiro
-        </p>
-        <input
-          type="file"
-          id="file-input"
-          accept=".json"
-        />
-      </div>
-
-      <button
-        class="btn-action"
-        onclick="gerarSeguidoresAutomaticos(event)"
-      >
-        ⚡ Gerar Seguidores Automáticos
-      </button>
-
-      <button
-        id="btn-start-race"
-        onclick="iniciarCorridaManual(event)"
-      >
-        🏁 INICIAR CORRIDA 🏎️
-      </button>
-
-    </div>
-
-    <div id="podium-backdrop"></div>
-
-    <div id="podium">
-
-      <h2>🏆 CLASSIFICAÇÃO FINAL 🏆</h2>
-
-      <div id="podium-list"></div>
-
-      <div id="sync-status">
-        ☁️ Conectando ao ranking...
-      </div>
-
-      <button
-        onclick="location.reload()"
-        style="
-          margin-top:12px;
-          padding:8px 20px;
-          border-radius:20px;
-          background:#ffd700;
-          border:none;
-          font-weight:bold;
-          cursor:pointer;
-        "
-      >
-        Correr Novamente
-      </button>
-
     </div>
 
   </div>
+
+  <!-- ATUALIZAR -->
+  <div class="refresh-area">
+    <button id="refreshBtn" onclick="loadRanking()">
+      🔄 Atualizar ranking
+    </button>
+  </div>
+
 </div>
+
 
 <script>
 
-  const SUPABASE_URL = "https://pdrkrltchoglgtnjprio.supabase.co";
-  const SUPABASE_ANON_KEY = "sb_publishable_9yvlW94LVk_toqNBnz4N1w_Smbpdqva";
+  /* ==========================================
+     SUPABASE
+  ========================================== */
 
-  function getSupabaseHeaders(extraHeaders = {}) {
-    const headers = { apikey: SUPABASE_ANON_KEY, ...extraHeaders };
-    // Chaves publishable novas não são JWTs: só devem ir no cabeçalho apikey.
-    // A autorização Bearer continua necessária apenas para a antiga chave anon JWT.
-    if (!SUPABASE_ANON_KEY.startsWith('sb_publishable_')) {
-      headers.Authorization = `Bearer ${SUPABASE_ANON_KEY}`;
-    }
-    return headers;
+  const SUPABASE_URL =
+    "https://pdrkrltchoglgtnjprio.supabase.co";
+
+  const SUPABASE_ANON_KEY =
+    "sb_publishable_9yvlW94LVk_toqNBnz4N1w_Smbpdqva";
+
+
+  /* ==========================================
+     ELEMENTOS
+  ========================================== */
+
+  const podium = document.getElementById("podium");
+  const rankingList = document.getElementById("rankingList");
+  const statusEl = document.getElementById("status");
+  const refreshBtn = document.getElementById("refreshBtn");
+
+
+  /* ==========================================
+     AVATAR PADRÃO
+  ========================================== */
+
+  function defaultAvatar(username) {
+
+    const name = encodeURIComponent(
+      username || "Piloto"
+    );
+
+    return `https://api.dicebear.com/9.x/initials/svg?seed=${name}`;
+
   }
 
-  const POINTS_SYSTEM = [25, 18, 15, 12, 10, 8, 6, 4, 2, 1];
 
-  const { Engine, World, Bodies, Body, Runner } = Matter;
+  /* ==========================================
+     ESCAPAR HTML
+  ========================================== */
 
-  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  function escapeHTML(value) {
 
-  function playBeep(isGo = false) {
-    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(isGo ? 880 : 440, audioCtx.currentTime);
-    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + (isGo ? 0.7 : 0.25));
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + (isGo ? 0.75 : 0.3));
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
   }
 
-  function playEngineRev() {
-    if (audioCtx.state === 'suspended') { audioCtx.resume(); }
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-    osc.type = 'sawtooth';
-    osc.frequency.setValueAtTime(110, audioCtx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(360, audioCtx.currentTime + 1.8);
-    gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2.0);
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-    osc.start();
-    osc.stop(audioCtx.currentTime + 2.1);
-  }
 
-  const canvas = document.getElementById('raceCanvas');
-  const ctx = canvas.getContext('2d');
-  const width = 450;
-  const height = 800;
-  canvas.width = width;
-  canvas.height = height;
+  /* ==========================================
+     FORMATAR AVATAR
+  ========================================== */
 
-  const engine = Engine.create({
-    gravity: { x: 0, y: 0 },
-    positionIterations: 10,
-    velocityIterations: 10
-  });
+  function getAvatar(player) {
 
-  const world = engine.world;
-  let runnerInstance = null;
-
-  let competitors = [];
-  let finishedList = [];
-  let raceStarted = false;
-  let raceEnded = false;
-  let currentLeader = null;
-  let cameraPos = { x: 0, y: 0 };
-  let definedMaxFollowers = 500;
-  let finishTriggerTime = 0;
-
-  const CAMERA_ZOOM = 0.42;
-
-  const trackWaypoints = [
-    { x: 500,  y: 250 },
-    { x: 2600, y: 250 },
-    { x: 3800, y: 700 },
-    { x: 4100, y: 1600 },
-    { x: 3600, y: 2600 },
-    { x: 2200, y: 3000 },
-    { x: 1200, y: 2400 },
-    { x: 800,  y: 3100 },
-    { x: 300,  y: 3100 },
-    { x: 80,   y: 2100 },
-    { x: 80,   y: 1100 },
-    { x: 280,  y: 500 },
-    { x: 420,  y: 250 }
-  ];
-
-  const TRACK_WIDTH = 700;
-  const FINISH_X = trackWaypoints[0].x;
-  const FINISH_Y = trackWaypoints[0].y;
-
-  function buildCircuitWalls() {
-    const numPoints = trackWaypoints.length;
-    for (let i = 0; i < numPoints; i++) {
-      const p1 = trackWaypoints[i];
-      const p2 = trackWaypoints[(i + 1) % numPoints];
-      const dx = p2.x - p1.x;
-      const dy = p2.y - p1.y;
-      const len = Math.hypot(dx, dy);
-      const nx = -dy / len;
-      const ny = dx / len;
-      const hw = TRACK_WIDTH / 2;
-
-      [1, -1].forEach(side => {
-        const wallThick = 150;
-        const w1x = p1.x + nx * (hw + wallThick / 2) * side;
-        const w1y = p1.y + ny * (hw + wallThick / 2) * side;
-        const w2x = p2.x + nx * (hw + wallThick / 2) * side;
-        const w2y = p2.y + ny * (hw + wallThick / 2) * side;
-        const cx = (w1x + w2x) / 2;
-        const cy = (w1y + w2y) / 2;
-        const angle = Math.atan2(w2y - w1y, w2x - w1x);
-
-        const wall = Bodies.rectangle(cx, cy, len + 100, wallThick, {
-          isStatic: true,
-          angle: angle,
-          restitution: 0.1,
-          friction: 0.0
-        });
-        World.add(world, wall);
-      });
-    }
-  }
-
-  buildCircuitWalls();
-
-  function createRacers(data, displayedTotal) {
-    const total = data.length;
-    definedMaxFollowers = displayedTotal;
-    document.getElementById('racer-count').innerText = displayedTotal;
-
-    let visualSize = 10;
-    let physicsSize = 9;
-    let spacingY = 22;
-    let spacingX = 22;
-
-    if (total <= 20) {
-      visualSize = 26;
-      physicsSize = 14;
-      spacingY = 56;
-      spacingX = 40;
-    } else if (total <= 100) {
-      visualSize = 18;
-      physicsSize = 11;
-      spacingY = 36;
-      spacingX = 28;
+    if (
+      player.avatar_url &&
+      typeof player.avatar_url === "string" &&
+      player.avatar_url.trim() !== ""
+    ) {
+      return player.avatar_url;
     }
 
-    const maxRows = Math.max(3, Math.min(18, Math.floor(540 / spacingY)));
-    const startGridX = 1800; 
-    const startGridY = 250;
+    return defaultAvatar(player.username);
 
-    const shuffledData = [...data].sort(() => Math.random() - 0.5);
+  }
 
-    shuffledData.forEach((item, index) => {
-      const col = Math.floor(index / maxRows);
-      const row = index % maxRows;
-      
-      const x = startGridX - col * spacingX;
-      const y = startGridY - ((maxRows - 1) * spacingY) / 2 + row * spacingY;
 
-      const body = Bodies.circle(x, y, physicsSize, {
-        restitution: 0.2,
-        friction: 0.0,
-        frictionAir: 0.03,
-        density: 0.002
-      });
+  /* ==========================================
+     REQUISIÇÃO SUPABASE
+  ========================================== */
 
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      
-      const originalUrl = 
-        item.avatarLarger || 
-        item.avatarMedium || 
-        item.avatarThumb || 
-        item.profile_pic_url || 
-        item.profile_pic || 
-        item.avatar || '';
+  async function supabaseRequest(url) {
 
-      img.src = originalUrl
-        ? `https://images.weserv.nl/?url=${encodeURIComponent(originalUrl)}&default=identicon`
-        : `https://api.dicebear.com/7.x/avataaars/svg?seed=${item.username || index}`;
+    const response = await fetch(url, {
 
-      competitors.push({
-        body,
-        name: item.username || item.uniqueId || `User_${index + 1}`,
-        img,
-        imgSrc: img.src,
-        radius: visualSize,
-        physicsRadius: physicsSize,
-        targetWp: 1,
-        checkpointsPassed: 0,
-        progress: 0,
-        power: 0.0011 + Math.random() * 0.0003,
-        finished: false,
-        finishPosition: null,
-        lastX: x,
-        lastY: y,
-        stuckTimer: 0
-      });
+      method: "GET",
 
-      World.add(world, body);
+      headers: {
+
+        "apikey": SUPABASE_ANON_KEY,
+
+        "Authorization":
+          `Bearer ${SUPABASE_ANON_KEY}`,
+
+        "Content-Type":
+          "application/json"
+
+      }
+
     });
 
-    cameraPos.x = 1600 - (width / 2) / CAMERA_ZOOM;
-    cameraPos.y = startGridY - (height / 2) / CAMERA_ZOOM;
-  }
+    const text = await response.text();
 
-  const fileInput = document.getElementById('file-input');
-  const dropzone = document.getElementById('dropzone');
-
-  fileInput.addEventListener('change', e => handleFile(e.target.files[0]));
-  dropzone.addEventListener('dragover', e => e.preventDefault());
-  dropzone.addEventListener('drop', e => {
-    e.preventDefault();
-    handleFile(e.dataTransfer.files[0]);
-  });
-
-  function handleFile(file) {
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = e => {
-      try {
-        const json = JSON.parse(e.target.result);
-        let list = Array.isArray(json) ? json : (json.data || []);
-        const targetTotal = parseInt(document.getElementById('custom-count').value, 10) || list.length;
-        if (list.length > targetTotal) {
-          list = list.slice(0, targetTotal);
-        }
-        processLoadedData(list, list.length);
-      } catch (err) {
-        console.error(err);
-        alert("Erro ao ler o ficheiro JSON!");
-      }
-    };
-    reader.readAsText(file);
-  }
-
-  function gerarSeguidoresAutomaticos(e) {
-    if (e) { e.stopPropagation(); }
-    const targetTotal = parseInt(document.getElementById('custom-count').value, 10) || 500;
-    
-    const nomesComuns = [
-      "gabriel", "lucas", "matheus", "vitor", "leo", "beatriz", "larissa", "amanda", 
-      "carlos", "bruno", "rafael", "tiago", "diego", "felipe", "renan", "igor",
-      "mariana", "juliana", "camila", "leticia", "carol", "thais", "bianca", "jessica",
-      "speed", "turbo", "drift", "pilot", "gamer", "f1_fan", "twitch", "tiktok"
-    ];
-
-    let generatedList = [];
-    for (let i = 1; i <= targetTotal; i++) {
-      const nomeBase = nomesComuns[Math.floor(Math.random() * nomesComuns.length)];
-      const username = `${nomeBase}_${Math.floor(Math.random() * 8999) + 1000}`;
-      generatedList.push({
-        username: username,
-        profile_pic: `https://api.dicebear.com/7.x/avataaars/svg?seed=${username}`
-      });
-    }
-
-    processLoadedData(generatedList, targetTotal);
-  }
-
-  function processLoadedData(list, targetTotal) {
-    createRacers(list, targetTotal);
-    document.getElementById('upload-prompt').style.display = 'none';
-    document.querySelector('.config-box').style.display = 'none';
-    const btnGerar = document.querySelector('.btn-action');
-    if (btnGerar) btnGerar.style.display = 'none';
-    document.getElementById('dropzone').style.cursor = 'default';
-    document.getElementById('btn-start-race').style.display = 'block';
-  }
-
-  function iniciarCorridaManual(e) {
-    if (e) { e.stopPropagation(); }
-    dropzone.style.display = 'none';
-    startCountdown();
-  }
-
-  function startCountdown() {
-    const cd = document.getElementById('countdown-overlay');
-    cd.style.display = 'block';
-    let count = 5;
-    cd.innerText = count;
-    playBeep(false);
-
-    const interval = setInterval(() => {
-      count--;
-      if (count > 0) {
-        cd.innerText = count;
-        cd.style.color = count <= 2 ? '#ffcc00' : '#ff3333';
-        playBeep(false);
-      } else if (count === 0) {
-        cd.innerText = "LARGADA!";
-        cd.style.color = '#00ff66';
-        playBeep(true);
-        playEngineRev();
-      } else {
-        clearInterval(interval);
-        cd.style.display = 'none';
-        document.getElementById('leader-badge').style.display = 'block';
-        raceStarted = true;
-        runnerInstance = Runner.create();
-        Runner.run(runnerInstance, engine);
-
-        competitors.forEach(c => {
-          Body.applyForce(c.body, c.body.position, {
-            x: 0.015,
-            y: (Math.random() - 0.5) * 0.002
-          });
-        });
-      }
-    }, 1000);
-  }
-
-  function draw() {
-    ctx.clearRect(0, 0, width, height);
-
-    if (competitors.length > 0 && !raceStarted) {
-      competitors.forEach(c => drawCompetitor(c, false));
-    }
-
-    if (raceStarted && competitors.length > 0 && !raceEnded) {
-      competitors.forEach(c => {
-        if (c.finished) {
-          Body.setVelocity(c.body, { x: 0, y: 0 });
-          Body.setAngularVelocity(c.body, 0);
-          return;
-        }
-
-        const target = trackWaypoints[c.targetWp];
-        const dx = target.x - c.body.position.x;
-        const dy = target.y - c.body.position.y;
-        const dist = Math.hypot(dx, dy);
-
-        if (c.targetWp === 0 && c.checkpointsPassed >= 11) {
-          const crossedFinishLine = c.body.position.x >= FINISH_X;
-          if (crossedFinishLine && !c.finished) {
-            c.finished = true;
-            c.finishPosition = finishedList.length + 1;
-            finishedList.push(c);
-            c.body.collisionFilter.mask = 0;
-
-            Body.setPosition(c.body, { x: FINISH_X, y: c.body.position.y });
-            Body.setVelocity(c.body, { x: 0, y: 0 });
-            Body.setAngularVelocity(c.body, 0);
-
-            // Destaca o vencedor instantaneamente na tela quando cruza a meta
-            if (finishedList.length === 1) {
-              const leaderBadge = document.getElementById('leader-badge');
-              leaderBadge.style.display = 'block';
-              leaderBadge.style.top = '40%';
-              leaderBadge.style.left = '50%';
-              leaderBadge.style.transform = 'translate(-50%, -50%) scale(1.4)';
-              leaderBadge.style.width = '280px';
-              leaderBadge.style.background = 'rgba(0, 0, 0, 0.95)';
-              leaderBadge.style.border = '3px solid #ffd700';
-              leaderBadge.style.padding = '12px 15px';
-              leaderBadge.style.borderRadius = '20px';
-              leaderBadge.style.boxShadow = '0 0 30px rgba(255, 215, 0, 0.7)';
-              leaderBadge.style.textAlign = 'center';
-
-              leaderBadge.innerHTML = `
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                  <span style="font-size: 16px; font-weight: 900; color: #ffd700;">🏆 VENCEDOR 🏆</span>
-                  <img src="${c.img.src}" style="width: 60px; height: 60px; border-radius: 50%; border: 3px solid #ffd700; object-fit: cover;" />
-                  <span style="font-size: 16px; font-weight: bold; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">@${c.name}</span>
-                </div>
-              `;
-            }
-
-            if (finishTriggerTime === 0) {
-              finishTriggerTime = Date.now();
-            }
-          }
-        }
-
-        if (dist < 400 && c.targetWp !== 0) {
-          c.targetWp = (c.targetWp + 1) % trackWaypoints.length;
-          c.checkpointsPassed++;
-        }
-
-        if (!c.finished) {
-          let angle = Math.atan2(dy, dx);
-          
-          const movedDist = Math.hypot(c.body.position.x - c.lastX, c.body.position.y - c.lastY);
-          c.lastX = c.body.position.x;
-          c.lastY = c.body.position.y;
-
-          if (movedDist < 0.6) {
-            c.stuckTimer++;
-          } else {
-            c.stuckTimer = 0;
-          }
-
-          let extraBoost = 1.0;
-          if (c.stuckTimer > 20) {
-            extraBoost = 3.5;
-            Body.applyForce(c.body, c.body.position, {
-              x: (Math.random() - 0.5) * 0.03,
-              y: (Math.random() - 0.5) * 0.03
-            });
-            c.stuckTimer = 0;
-          }
-
-          const currentSpeed = Math.hypot(c.body.velocity.x, c.body.velocity.y);
-          const antiLag = currentSpeed < 0.3 ? 2.5 : 1.0;
-
-          Body.applyForce(c.body, c.body.position, {
-            x: Math.cos(angle) * c.power * antiLag * extraBoost,
-            y: Math.sin(angle) * c.power * antiLag * extraBoost
-          });
-        }
-
-        c.progress = (c.checkpointsPassed * 5000) - dist;
-      });
-
-      if (finishTriggerTime > 0 && !raceEnded) {
-        const timeSinceWinner = (Date.now() - finishTriggerTime) / 1000;
-        
-        if (finishedList.length >= Math.min(10, competitors.length) || timeSinceWinner > 12.0) {
-          showPodium();
-        }
-      }
-
-      const activeRacers = competitors
-        .filter(c => !c.finished)
-        .sort((a, b) => {
-          if (b.targetWp !== a.targetWp) {
-            return b.targetWp - a.targetWp;
-          }
-          const target = trackWaypoints[a.targetWp];
-          const distA = Math.hypot(target.x - a.body.position.x, target.y - a.body.position.y);
-          const distB = Math.hypot(target.x - b.body.position.x, target.y - b.body.position.y);
-          return distA - distB;
-        });
-
-      if (activeRacers.length > 0) {
-        let potentialLeader = activeRacers[0];
-
-        if (
-          !(currentLeader && currentLeader.targetWp === 0 && finishedList.length === 0)
-        ) {
-          currentLeader = potentialLeader;
-        }
-
-        if (finishedList.length === 0) {
-          document.getElementById('leader-pos').innerText = '1º 👑';
-          document.getElementById('leader-name').innerText = `@${currentLeader.name}`;
-        }
-
-        const countToTrack = Math.min(3, activeRacers.length);
-        const topGroup = activeRacers.slice(0, countToTrack);
-        let sumX = 0;
-        let sumY = 0;
-        topGroup.forEach(r => {
-          sumX += r.body.position.x;
-          sumY += r.body.position.y;
-        });
-        const avgX = sumX / topGroup.length;
-        const avgY = sumY / topGroup.length;
-
-        let targetCamX = avgX - (width / 2) / CAMERA_ZOOM;
-        let targetCamY = avgY - (height / 2) / CAMERA_ZOOM;
-        const minCameraX = FINISH_X - (width / CAMERA_ZOOM) + 200;
-        const clampedTargetCamX = Math.max(minCameraX, targetCamX);
-
-        cameraPos.x += (clampedTargetCamX - cameraPos.x) * 0.08;
-        cameraPos.x = Math.max(minCameraX, cameraPos.x);
-        cameraPos.y += (targetCamY - cameraPos.y) * 0.08;
-
-        const distToFinishLine = Math.abs(currentLeader.body.position.x - FINISH_X);
-        const finishBadge = document.getElementById('finish-text-badge');
-        
-        if ((distToFinishLine < 500 && currentLeader.targetWp === 0) || finishedList.length > 0) {
-          finishBadge.style.display = 'block';
-        } else {
-          finishBadge.style.display = 'none';
-        }
-      }
-    }
-
-    ctx.save();
-    
-    ctx.scale(CAMERA_ZOOM, CAMERA_ZOOM);
-    ctx.translate(-cameraPos.x, -cameraPos.y);
-
-    ctx.strokeStyle = '#272727';
-    ctx.lineWidth = TRACK_WIDTH;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    trackWaypoints.forEach((p, idx) => {
-      if (idx === 0) { ctx.moveTo(p.x, p.y); }
-      else { ctx.lineTo(p.x, p.y); }
-    });
-    ctx.closePath();
-    ctx.stroke();
-
-    ctx.strokeStyle = '#e63946';
-    ctx.lineWidth = TRACK_WIDTH + 16;
-    ctx.setLineDash([30, 30]);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    ctx.strokeStyle = '#272727';
-    ctx.lineWidth = TRACK_WIDTH;
-    ctx.stroke();
-
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-    ctx.lineWidth = 4;
-    ctx.setLineDash([25, 25]);
-    ctx.stroke();
-    ctx.setLineDash([]);
-
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
-    ctx.lineWidth = 6;
-    ctx.beginPath();
-    ctx.moveTo(1800, 250 - TRACK_WIDTH / 2);
-    ctx.lineTo(1800, 250 + TRACK_WIDTH / 2);
-    ctx.stroke();
-
-    const finishTop = FINISH_Y - TRACK_WIDTH / 2;
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(FINISH_X - 16, finishTop, 32, TRACK_WIDTH);
-
-    const boxSize = 16;
-    for (let row = 0; row < Math.ceil(TRACK_WIDTH / boxSize); row++) {
-      for (let col = 0; col < 2; col++) {
-        if ((row + col) % 2 === 0) {
-          ctx.fillStyle = '#000000';
-          ctx.fillRect(FINISH_X - 16 + col * boxSize, finishTop + row * boxSize, boxSize, boxSize);
-        }
-      }
-    }
-
-    competitors.forEach(c => {
-      if (c === currentLeader && !raceEnded) { return; }
-      drawCompetitor(c, false);
-    });
-
-    if (currentLeader && !raceEnded) {
-      drawCompetitor(currentLeader, true);
-    }
-
-    ctx.restore();
-
-    if (!raceEnded) {
-      requestAnimationFrame(draw);
-    }
-  }
-
-  function drawCompetitor(c, isLeader) {
-    const { x, y } = c.body.position;
-    ctx.save();
-    ctx.translate(x, y);
-
-    if (isLeader) {
-      ctx.beginPath();
-      ctx.arc(0, 0, c.radius + 6, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(255, 215, 0, 0.4)';
-      ctx.fill();
-
-      ctx.beginPath();
-      ctx.arc(0, 0, c.radius + 3, 0, Math.PI * 2);
-      ctx.fillStyle = '#ffd700';
-      ctx.fill();
-    } else {
-      ctx.beginPath();
-      ctx.arc(0, 0, c.radius + 1.5, 0, Math.PI * 2);
-      ctx.fillStyle = '#888';
-      ctx.fill();
-    }
-
-    ctx.beginPath();
-    ctx.arc(0, 0, c.radius, 0, Math.PI * 2);
-    ctx.clip();
+    let data;
 
     try {
-      if (c.img.complete && c.img.naturalWidth !== 0) {
-        ctx.drawImage(c.img, -c.radius, -c.radius, c.radius * 2, c.radius * 2);
-      } else {
-        ctx.fillStyle = '#555';
-        ctx.fill();
-      }
-    } catch (e) {
-      ctx.fillStyle = '#555';
-      ctx.fill();
+      data = text ? JSON.parse(text) : null;
+    } catch {
+      data = text;
     }
 
-    ctx.restore();
+    if (!response.ok) {
 
-    if (isLeader) {
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.font = '16px Arial';
-      ctx.textAlign = 'center';
-      ctx.fillText('👑', 0, -c.radius - 6);
-      ctx.restore();
+      throw new Error(
+        `HTTP ${response.status}: ${
+          typeof data === "string"
+            ? data
+            : JSON.stringify(data)
+        }`
+      );
+
     }
+
+    return data;
+
   }
 
-  async function saveRacePoints(raceTop10) {
-    const syncStatus = document.getElementById('sync-status');
-    if (syncStatus) { syncStatus.innerText = '☁️ Enviando pontos para o ranking online...'; }
-    let savedCount = 0;
-    const failedPilots = [];
 
-    for (let idx = 0; idx < raceTop10.length; idx++) {
-      const pilot = raceTop10[idx];
-      const pts = POINTS_SYSTEM[idx] || 0;
-      const isWinner = (idx === 0);
+  /* ==========================================
+     CARREGAR RANKING
+  ========================================== */
 
-      try {
-        let currentPoints = 0;
-        let currentWins = 0;
+  async function loadRanking() {
 
-        const checkRes = await fetch(
-          `${SUPABASE_URL}/rest/v1/leaderboard?username=eq.${encodeURIComponent(pilot.name)}&select=points,wins`,
-          {
-            headers: getSupabaseHeaders()
-          }
+    refreshBtn.disabled = true;
+
+    statusEl.textContent =
+      "🏁 Atualizando ranking...";
+
+    rankingList.innerHTML = `
+      <div class="message">
+        Carregando pilotos...
+      </div>
+    `;
+
+    podium.innerHTML = "";
+
+    try {
+
+      const url =
+        `${SUPABASE_URL}/rest/v1/leaderboard` +
+        `?select=username,avatar_url,points,wins` +
+        `&order=points.desc,wins.desc,username.asc`;
+
+      const players =
+        await supabaseRequest(url);
+
+
+      if (!Array.isArray(players)) {
+        throw new Error(
+          "Resposta inválida do Supabase."
         );
+      }
 
-        if (!checkRes.ok) {
-          throw new Error(`Consulta ao Supabase falhou (HTTP ${checkRes.status}): ${await checkRes.text()}`);
-        }
-        const rows = await checkRes.json();
-        if (rows && rows.length > 0) {
-          currentPoints = Number(rows[0].points) || 0;
-          currentWins = Number(rows[0].wins) || 0;
-        }
 
-        const upsertRes = await fetch(`${SUPABASE_URL}/rest/v1/leaderboard?on_conflict=username`, {
-          method: 'POST',
-          headers: getSupabaseHeaders({
-            "Content-Type": "application/json",
-            "Prefer": "resolution=merge-duplicates"
-          }),
-          body: JSON.stringify({
-            username: pilot.name,
-            avatar_url: pilot.imgSrc,
-            points: currentPoints + pts,
-            wins: currentWins + (isWinner ? 1 : 0),
-            updated_at: new Date().toISOString()
-          })
+      /* ======================================
+         PODERIA HAVER DUPLICADOS
+         Mantém apenas uma linha por username.
+      ====================================== */
+
+      const uniquePlayers = [];
+
+      const seen = new Set();
+
+      for (const player of players) {
+
+        const username =
+          String(player.username || "")
+            .trim();
+
+        if (!username) continue;
+
+        const key =
+          username.toLowerCase();
+
+        if (seen.has(key)) continue;
+
+        seen.add(key);
+
+        uniquePlayers.push({
+
+          username,
+
+          avatar_url:
+            player.avatar_url || "",
+
+          points:
+            Number(player.points) || 0,
+
+          wins:
+            Number(player.wins) || 0
+
         });
 
-        if (!upsertRes.ok) {
-          throw new Error(`Gravação no Supabase falhou (HTTP ${upsertRes.status}): ${await upsertRes.text()}`);
-        }
-        savedCount++;
-      } catch (err) {
-        failedPilots.push(pilot.name);
-        console.error(`Erro ao atualizar os pontos de @${pilot.name}:`, err);
       }
+
+
+      /* ======================================
+         ORDENAR
+      ====================================== */
+
+      uniquePlayers.sort((a, b) => {
+
+        if (b.points !== a.points) {
+          return b.points - a.points;
+        }
+
+        if (b.wins !== a.wins) {
+          return b.wins - a.wins;
+        }
+
+        return a.username.localeCompare(
+          b.username
+        );
+
+      });
+
+
+      /* ======================================
+         NENHUM PILOTO
+      ====================================== */
+
+      if (uniquePlayers.length === 0) {
+
+        rankingList.innerHTML = `
+          <div class="message">
+            🏁 Nenhum piloto no ranking ainda.
+          </div>
+        `;
+
+        statusEl.textContent =
+          "Nenhum resultado encontrado.";
+
+        return;
+      }
+
+
+      /* ======================================
+         PÓDIO
+      ====================================== */
+
+      renderPodium(uniquePlayers);
+
+
+      /* ======================================
+         LISTA COMPLETA
+      ====================================== */
+
+      renderRanking(uniquePlayers);
+
+
+      statusEl.textContent =
+        `🏁 ${uniquePlayers.length} piloto${
+          uniquePlayers.length === 1 ? "" : "s"
+        } no campeonato`;
+
     }
 
-    if (syncStatus) {
-      if (failedPilots.length === 0) {
-        syncStatus.innerText = `✅ Supabase atualizado! ${savedCount} corredor(es) pontuaram.`;
-      } else if (savedCount > 0) {
-        syncStatus.innerText = `⚠️ Supabase recebeu ${savedCount}/${raceTop10.length}; falhou para ${failedPilots.length}.`;
-      } else {
-        syncStatus.innerText = '❌ Não foi possível enviar os pontos ao Supabase. Veja o erro no console.';
-      }
+    catch (error) {
+
+      console.error(
+        "Erro ao carregar ranking:",
+        error
+      );
+
+      statusEl.textContent =
+        "❌ Erro ao carregar ranking.";
+
+      rankingList.innerHTML = `
+        <div class="message error">
+          ❌ Não foi possível carregar o ranking.<br><br>
+          ${escapeHTML(error.message)}
+        </div>
+      `;
+
     }
+
+    finally {
+
+      refreshBtn.disabled = false;
+
+    }
+
   }
 
-  function showPodium() {
-    if (raceEnded) { return; }
-    raceEnded = true;
 
-    if (runnerInstance) { Runner.stop(runnerInstance); }
+  /* ==========================================
+     RENDERIZAR PÓDIO
+  ========================================== */
 
-    const finishBadge = document.getElementById('finish-text-badge');
-    if (finishBadge) { finishBadge.style.display = 'none'; }
+  function renderPodium(players) {
 
-    // Aguarda exatamente 3 segundos com o destaque do vencedor na tela antes de abrir o placar geral
-    setTimeout(() => {
-      const counterBadge = document.getElementById('counter-badge');
-      if (counterBadge) { counterBadge.style.display = 'none'; }
+    const first = players[0];
+    const second = players[1];
+    const third = players[2];
 
-      competitors.forEach(c => {
-        Body.setVelocity(c.body, { x: 0, y: 0 });
-        Body.setAngularVelocity(c.body, 0);
-      });
+    /*
+      Ordem visual:
+      2º | 1º | 3º
+    */
 
-      document.getElementById('leader-badge').style.display = 'none';
-      document.getElementById('podium-backdrop').style.display = 'block';
+    const podiumPlayers = [
 
-      const podium = document.getElementById('podium');
-      const list = document.getElementById('podium-list');
-      podium.style.display = 'block';
-      list.innerHTML = '';
+      {
+        player: second,
+        position: 2,
+        className: "second"
+      },
 
-      competitors.forEach(c => {
-        if (!finishedList.includes(c)) {
-          finishedList.push(c);
-        }
-      });
+      {
+        player: first,
+        position: 1,
+        className: "first"
+      },
 
-      const top10 = finishedList.slice(0, 10);
-      saveRacePoints(top10);
-
-      let displayList = [];
-      const totalCompetitors = finishedList.length;
-
-      if (totalCompetitors <= 10) {
-        displayList = finishedList.map((c, idx) => ({ racer: c, realPos: idx + 1, isLast: false }));
-      } else {
-        for (let i = 0; i < 10; i++) {
-          displayList.push({ racer: finishedList[i], realPos: i + 1, isLast: false });
-        }
-        displayList.push({ isSeparator: true });
-        const lastRacer = finishedList[totalCompetitors - 1];
-        displayList.push({ racer: lastRacer, realPos: totalCompetitors, isLast: true });
+      {
+        player: third,
+        position: 3,
+        className: "third"
       }
 
-      displayList.forEach((item) => {
-        const row = document.createElement('div');
-        
-        if (item.isSeparator) {
-          row.className = 'ellipsis-row';
-          row.innerHTML = '. . .';
-        } else {
-          const c = item.racer;
-          const pos = item.realPos;
-          const pts = (pos <= 10) ? `+${POINTS_SYSTEM[pos - 1]} pts` : '0 pts';
+    ];
 
-          row.className = item.isLast ? 'podium-item last-place' : 'podium-item';
-          row.innerHTML = `
-            <div style="display:flex;align-items:center;">
-              <b style="color:${item.isLast ? '#ff4444' : '#ffd700'};width:32px;">#${pos}</b>
-              <img src="${c.img.src}" />
-              <span>@${c.name} ${item.isLast ? '🐢' : ''}</span>
+
+    podium.innerHTML =
+      podiumPlayers
+        .filter(item => item.player)
+        .map(item => {
+
+          const player = item.player;
+
+          const avatar =
+            escapeHTML(getAvatar(player));
+
+          const username =
+            escapeHTML(player.username);
+
+          const crown =
+            item.position === 1
+              ? `<div class="crown">👑</div>`
+              : "";
+
+          return `
+
+            <div class="podium-card ${item.className}">
+
+              ${crown}
+
+              <img
+                class="avatar"
+                src="${avatar}"
+                alt=""
+                onerror="this.onerror=null;this.src='${defaultAvatar(player.username)}';"
+              >
+
+              <div class="podium-position">
+                ${item.position}º
+              </div>
+
+              <div class="podium-name">
+                ${username}
+              </div>
+
+              <div class="podium-points">
+                ${player.points} pts
+              </div>
+
+              <div class="podium-wins">
+                🏁 ${player.wins} ${
+                  player.wins === 1
+                    ? "vitória"
+                    : "vitórias"
+                }
+              </div>
+
             </div>
-            <span class="pts-badge">${pts}</span>
+
           `;
-        }
-        list.appendChild(row);
-      });
-    }, 3000); // 3 segundos exatos de comemoração com a foto e o @
+
+        })
+        .join("");
+
   }
 
-  draw();
+
+  /* ==========================================
+     RENDERIZAR LISTA
+  ========================================== */
+
+  function renderRanking(players) {
+
+    rankingList.innerHTML =
+      players.map((player, index) => {
+
+        const position =
+          index + 1;
+
+        const avatar =
+          escapeHTML(getAvatar(player));
+
+        const username =
+          escapeHTML(player.username);
+
+        let positionClass = "";
+
+        if (position === 1) {
+          positionClass = "top1";
+        }
+
+        else if (position === 2) {
+          positionClass = "top2";
+        }
+
+        else if (position === 3) {
+          positionClass = "top3";
+        }
+
+
+        return `
+
+          <div class="ranking-row">
+
+            <div class="position ${positionClass}">
+              ${position}º
+            </div>
+
+            <img
+              class="ranking-avatar"
+              src="${avatar}"
+              alt=""
+              loading="lazy"
+              onerror="this.onerror=null;this.src='${defaultAvatar(player.username)}';"
+            >
+
+            <div class="player-info">
+
+              <div class="player-name">
+                ${username}
+              </div>
+
+              <div class="player-wins">
+                🏁 ${player.wins} ${
+                  player.wins === 1
+                    ? "vitória"
+                    : "vitórias"
+                }
+              </div>
+
+            </div>
+
+            <div class="player-points">
+
+              <div class="points">
+                ${player.points} pts
+              </div>
+
+              <div class="points-label">
+                PONTOS
+              </div>
+
+            </div>
+
+          </div>
+
+        `;
+
+      }).join("");
+
+  }
+
+
+  /* ==========================================
+     ATUALIZAÇÃO AUTOMÁTICA
+  ========================================== */
+
+  loadRanking();
+
+  /*
+    Atualiza a cada 30 segundos.
+  */
+
+  setInterval(() => {
+
+    loadRanking();
+
+  }, 30000);
 
 </script>
 
